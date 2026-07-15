@@ -1,0 +1,25 @@
+{
+  "name": "campusborrow",
+  "version": "1.0.0",
+  "description": "A campus-based web app where students can lend and borrow items",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyane006/CampusBorrow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kyane006/CampusBorrow/issues"
+  },
+  "homepage": "https://github.com/kyane006/CampusBorrow#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
