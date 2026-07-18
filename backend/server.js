@@ -1,53 +1,59 @@
+require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 
+// Import your Listing model
+const Listing = require('./models/Listing'); 
 const app = express();
-const port = 3001;
-
+const port = process.env.PORT || 3001; 
 app.use(cors());
 app.use(express.json());
 
-const items = [
-    {
-        id: 1,
-        name: 'Graphing Calculator',
-        category: 'Electronics',
-        description: 'TI-84 calculator available for math classes.',
-        available: true
-    },
-    {
-        id: 2,
-        name: 'Biology Textbook',
-        category: 'Books',
-        description: 'Used biology textbook for intro bio.',
-        available: true
-    },
-    {
-        id: 3,
-        name: 'Soccer Ball',
-        category: 'Sports',
-        description: 'Soccer ball available to borrow.',
-        available: false
-    }
-];
+
+// all the database
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connected to MongoDB successfully!'))
+  .catch(err => console.error('❌ MongoDB connection error:', err.message));
+
 
 app.get('/', (req, res) => {
     res.send('Welcome to the CampusBorrow API!');
 });
 
-app.get('/api/items', (req, res) => {
-    res.json(items);
+app.get('/api/items', async (req, res) => {
+    try {
+        const items = await Listing.find(); 
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error pulling items', error: error.message });
+    }
 });
 
-app.get('/api/items/:id', (req, res) => {
-    const itemId = parseInt(req.params.id);
-    const item = items.find(item => item.id === itemId);
+// all the items
+app.get('/api/items/:id', async (req, res) => {
+    try {
+        const item = await Listing.findById(req.params.id);
 
-    if (!item) {
-        return res.status(404).json({ message: 'Item not found' });
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        res.json(item);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error tracking item', error: error.message });
     }
+});
 
-    res.json(item);
+// add the items
+app.post('/api/items', async (req, res) => {
+    try {
+        const newItem = await Listing.create(req.body);
+        
+        res.status(201).json(newItem); 
+    } catch (error) {
+        res.status(400).json({ message: 'Failed to create item', error: error.message });
+    }
 });
 
 app.listen(port, () => {

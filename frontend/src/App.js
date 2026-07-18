@@ -28,18 +28,18 @@ function App() {
           <h2>Available Items</h2>
             <ul className="item-list">
               {items.map(item => (
-                <li key={item.id} onClick={() => getItemDetails(item.id)}>
-                  {item.name} - {item.category}
+                <li key={item._id} onClick={() => getItemDetails(item._id)}>
+                  {item.title} - {item.category}
                 </li>
               ))}
             </ul>
             {selectedItem && (
               <div className="item-details">
                 <h3>Item Details</h3>
-                <p><strong>Name:</strong> {selectedItem.name}</p>
+                <p><strong>Name:</strong> {selectedItem.title}</p>
                 <p><strong>Category:</strong> {selectedItem.category}</p>
                 <p><strong>Description:</strong> {selectedItem.description}</p>
-                <p><strong>Status:</strong> {selectedItem.available ? 'Available' : 'Unavailable'}</p>
+                <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
               </div>
             )}
         </section>
