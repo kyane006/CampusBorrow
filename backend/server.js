@@ -30,6 +30,7 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
+// all the items
 app.get('/api/items/:id', async (req, res) => {
     try {
         const item = await Listing.findById(req.params.id);
@@ -41,6 +42,17 @@ app.get('/api/items/:id', async (req, res) => {
         res.json(item);
     } catch (error) {
         res.status(500).json({ message: 'Server error tracking item', error: error.message });
+    }
+});
+
+// add the items
+app.post('/api/items', async (req, res) => {
+    try {
+        const newItem = await Listing.create(req.body);
+        
+        res.status(201).json(newItem); 
+    } catch (error) {
+        res.status(400).json({ message: 'Failed to create item', error: error.message });
     }
 });
 
