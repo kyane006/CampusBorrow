@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import your Listing model
-const Listing = require('./models/Listing'); 
+const Listing = require('./models/listing'); 
 const app = express();
 const port = process.env.PORT || 3001; 
 app.use(cors());
@@ -13,8 +13,8 @@ app.use(express.json());
 
 // all the database
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB successfully!'))
-  .catch(err => console.error('❌ MongoDB connection error:', err.message));
+  .then(() => console.log('Connected to MongoDB successfully!'))
+  .catch(err => console.error('MongoDB connection error:', err.message));
 
 
 app.get('/', (req, res) => {
@@ -58,4 +58,19 @@ app.post('/api/items', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Backend server is running on http://localhost:${port}`);
+});
+
+// the delete function
+app.delete('/api/items/:id', async (req, res) => {
+    try {
+        const deletedItem = await Listing.findByIdAndDelete(req.params.id);
+
+        if (!deletedItem) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        res.json({ message: 'Item deleted successfully', deletedItem });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error deleting item', error: error.message });
+    }
 });
