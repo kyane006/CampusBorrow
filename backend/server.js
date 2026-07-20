@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import your Listing model
-const Listing = require('./models/Listing'); 
+const Listing = require('./models/listing'); 
 const app = express();
 const port = process.env.PORT || 3001; 
 app.use(cors());
