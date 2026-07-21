@@ -166,11 +166,24 @@ const deleteItem = (id) => {
             </div>
             {selectedItem && (
               <div className="item-details">
-                <h3>Item Details</h3>
-                <p><strong>Name:</strong> {selectedItem.title}</p>
+                <h2>Selected Item</h2>
+
+                <img
+                  src={selectedItem.photo || '/noimage.jpg'}
+                  alt={selectedItem.title}
+                  className="details-image"
+                  onError={(e) => {
+                    e.target.src = '/noimage.jpg';
+                  }}
+                />
+
+                <h3>{selectedItem.title}</h3>
                 <p><strong>Category:</strong> {selectedItem.category}</p>
+                <p><strong>Price:</strong> ${selectedItem.price}</p>
                 <p><strong>Description:</strong> {selectedItem.description}</p>
                 <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
+
+                <button className="borrow-button">Request to Borrow</button>
               </div>
             )}
         </section>

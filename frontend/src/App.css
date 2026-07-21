@@ -35,7 +35,20 @@
 }
 
 .item-details {
-  margin-top: 20px;
+  margin: 30px auto;
+  max-width: 400px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background-color: white;
+}
+
+.details-image {
+  width: 100%;
+  max-height: 3000px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .item-card h3 {
@@ -52,4 +65,10 @@
   object-fit: cover;
   border-radius: 6px;
   margin-bottom: 10px;
+}
+
+.borrow-button {
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-top: 10px;
 }
