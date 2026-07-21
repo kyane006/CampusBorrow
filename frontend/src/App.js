@@ -2,8 +2,17 @@ import './App.css';
 import { useState, useEffect } from 'react';
 
 function App() {
-  const [items, setItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+const [items, setItems] = useState([]);
+const [selectedItem, setSelectedItem] = useState(null);
+
+const [newItem, setNewItem] = useState({
+  title: '',
+  category: '',
+  price: '',
+  description: '',
+  photo: ''
+});
+
   useEffect(() => {
   fetch('http://localhost:3001/api/items')
     .then(response => response.json())
@@ -15,6 +24,13 @@ function App() {
       .then(response => response.json())
       .then(data => setSelectedItem(data));
   };
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+      setNewItem({
+        ...newItem,
+        [name]: value
+      });
+  };
 
   return (
     <div className="App">
@@ -22,8 +38,55 @@ function App() {
         <h1>CampusBorrow</h1>
         <p>Borrow and lend items with students on campus.</p>
       </header>
-
       <main className="main-content">
+        <section className="add-item-section">
+          <h2>Add New Item</h2>
+
+          <form>
+            <input
+              type="text"
+              name="title"
+              placeholder="Item title"
+              value={newItem.title}
+              onChange={handleInputChange}
+            />
+
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              value={newItem.category}
+              onChange={handleInputChange}
+            />
+
+            <input
+              type="number"
+              name="price"
+              placeholder="Price"
+              value={newItem.price}
+              onChange={handleInputChange}
+            />
+
+            <input
+              type="text"
+              name="description"
+              placeholder="Description"
+              value={newItem.description}
+              onChange={handleInputChange}
+            />
+
+            <input
+              type="text"
+              name="photo"
+              placeholder="Image URL"
+              value={newItem.photo}
+              onChange={handleInputChange}
+            />
+
+            <button type="submit">Add Item</button>
+          </form>
+        </section>
+        
         <section className="intro-card">
           <h2>Available Items</h2>
           <div className="item-list">
