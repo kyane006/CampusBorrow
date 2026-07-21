@@ -16,7 +16,8 @@ const [newItem, setNewItem] = useState({
   useEffect(() => {
   fetch('http://localhost:3001/api/items')
     .then(response => response.json())
-    .then(data => setItems(data));
+    .then(data => setItems(data))
+    .catch(error => console.log('Error fetching items:', error));
 }, []);
 
   const getItemDetails = (id) => {
@@ -32,6 +33,44 @@ const [newItem, setNewItem] = useState({
       });
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    fetch('http://localhost:3001/api/items', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...newItem,
+        price: Number(newItem.price),
+        lenderId: '507f1f77bcf86cd799439011',
+        photo: newItem.photo || '/noimage.jpg',
+        isAvailable: true
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to add item');
+      }
+      return response.json();
+    })
+    .then(data => {
+      setItems([...items, data]);
+
+      setNewItem({
+        title: '',
+        category: '',
+        price: '',
+        description: '',
+        photo: ''
+      });
+    })
+    .catch(error => {
+      console.log('Error adding item:', error);
+    });
+  };
+
   return (
     <div className="App">
       <header className="hero">
@@ -42,7 +81,7 @@ const [newItem, setNewItem] = useState({
         <section className="add-item-section">
           <h2>Add New Item</h2>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               name="title"
@@ -92,6 +131,7 @@ const [newItem, setNewItem] = useState({
           <div className="item-list">
               {items.map(item => (
                 <div className="item-card" key={item._id}>
+                  <img src={item.photo} alt={item.title} className="item-image" />
                   <h3>{item.title}</h3>
                   <p><strong>Category:</strong> {item.category}</p>
                   <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
