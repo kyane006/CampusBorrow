@@ -1,74 +1,186 @@
 .App {
+  min-height: 100vh;
+  background-color: #f4f6f8;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
+
+.intro-card h2,
+.add-item-section h2 {
+  color: #111827;
+  font-size: 26px;
+}
+
+/* Top header */
+.hero {
+  background-color: #1f2937;
+  color: white;
+  text-align: center;
+  padding: 35px 20px;
+  margin-bottom: 30px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 42px;
+}
+
+.hero p {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+/* Main page wrapper */
+.main-content {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Add item form */
+.add-item-section {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 30px;
   text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.add-item-section h2 {
+  margin-top: 0;
 }
 
-.item-list {
+.add-item-section form {
   display: flex;
-  justify-content: center;
-  gap: 15px;
   flex-wrap: wrap;
-  margin-top: 20px;
+  gap: 10px;
+  justify-content: center;
+}
+
+.add-item-section input {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  min-width: 160px;
+}
+
+.add-item-section button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.add-item-section button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Item cards */
+.item-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 35px;
+  margin-bottom: 35px;
 }
 
 .item-card {
   border: 1px solid #ddd;
-  padding: 15px;
-  width: 220px;
-  border-radius: 8px;
+  padding: 18px;
+  border-radius: 12px;
   cursor: pointer;
   background-color: white;
-}
-
-.item-list li:hover {
-    background-color: #f2f2f2;
-}
-
-.item-details {
-  margin: 30px auto;
-  max-width: 400px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  background-color: white;
-}
-
-.details-image {
-  width: 100%;
-  max-height: 3000px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  text-align: center;
 }
 
 .item-card h3 {
-  margin-bottom: 5px;
+  margin: 12px 0 8px;
+  font-size: 20px;
+  color: black;
 }
 
 .item-card button {
   margin: 5px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+
+}
+
+.item-card:hover {
+  background-color: #f9fafb;
 }
 
 .item-image {
   width: 100%;
   height: 185px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 10px;
 }
 
+/* button colors */
+.item-card button:first-of-type {
+  background-color: #2563eb;
+  color: white;
+}
+
+.item-card button:first-of-type:hover {
+  background-color: #1d4ed8;
+}
+
+.item-card button:last-of-type {
+  background-color: red;
+  color: white;
+}
+
+.item-card button:last-of-type:hover {
+  background-color: #b91c1c;
+}
+
+/* Selected item details */
+.item-details {
+  margin: 30px auto;
+  max-width: 500px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  background-color: white;
+}
+
+.item-details h3 {
+  font-size: 22px;
+  margin: 15px 0 10px;
+  color: #111827;
+}
+
+.details-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Button colors */
 .borrow-button {
-  padding: 8px 14px;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-weight: bold;
   cursor: pointer;
   margin-top: 10px;
 }
+
+.borrow-button:hover {
+  background-color: #15803d;
+}
+
