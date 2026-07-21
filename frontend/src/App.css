@@ -5,10 +5,24 @@
   color: #222;
 }
 
+/* Title and logo*/
 .intro-card h2,
 .add-item-section h2 {
   color: #111827;
   font-size: 26px;
+}
+
+.hero-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
 }
 
 /* Top header */
@@ -16,18 +30,35 @@
   background-color: #1f2937;
   color: white;
   text-align: center;
-  padding: 35px 20px;
+  padding: 28px 20px;
   margin-bottom: 30px;
+}
+
+.hero-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.hero-logo {
+  width: 70px;
+  height: 70px;
+  background-color: white;
+  border-radius: 50%;
+  padding: 6px;
 }
 
 .hero h1 {
   margin: 0;
-  font-size: 42px;
+  font-size: 48px;
+  font-weight: 800;
 }
 
-.hero p {
-  margin-top: 10px;
-  font-size: 18px;
+
+.hero-text p {
+  margin: 6px 0 0;
+  font-size: 17px;
 }
 
 /* Main page wrapper */

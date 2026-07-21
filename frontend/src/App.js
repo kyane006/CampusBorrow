@@ -97,8 +97,14 @@ const deleteItem = (id) => {
   return (
     <div className="App">
       <header className="hero">
-        <h1>CampusBorrow</h1>
-        <p>Borrow and lend items with students on campus.</p>
+        <div className="hero-title">
+          <img src="/transparent-logo.png" alt="CampusBorrow logo" className="hero-logo"/>
+        
+          <div className="hero-text">
+            <h1>CampusBorrow</h1>
+            <p>Borrow and lend items with students on campus.</p>
+          </div>
+        </div>
       </header>
       <main className="main-content">
         <section className="add-item-section">
