@@ -28,6 +28,6 @@ jobs:
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
       run: |
-        node server.js & 
-        sleep 5  
+        node server.js &
+        sleep 5
         node test-api.js
