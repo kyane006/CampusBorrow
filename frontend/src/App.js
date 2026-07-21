@@ -49,11 +49,14 @@ const [newItem, setNewItem] = useState({
         isAvailable: true
       })
     })
-    .then(response => {
+    .then(async response => {
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to add item');
+        console.log('Backend error:', data);
+        throw new Error(data.error || 'Failed to add item');
       }
-      return response.json();
+      return data;
     })
     .then(data => {
       setItems([...items, data]);
@@ -70,6 +73,26 @@ const [newItem, setNewItem] = useState({
       console.log('Error adding item:', error);
     });
   };
+
+  // Deletes an item from the backend and removes it from the page
+const deleteItem = (id) => {
+  fetch(`http://localhost:3001/api/items/${id}`, {
+    method: 'DELETE'
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+      return response.json();
+    })
+    .then(() => {
+      setItems(items.filter(item => item._id !== id));
+      setSelectedItem(null);
+    })
+    .catch(error => {
+      console.log('Error deleting item:', error);
+    });
+};
 
   return (
     <div className="App">
@@ -129,16 +152,15 @@ const [newItem, setNewItem] = useState({
         <section className="intro-card">
           <h2>Available Items</h2>
           <div className="item-list">
-              {items.map(item => (
+              {Array.isArray(items) && items.map(item => (
                 <div className="item-card" key={item._id}>
                   <img src={item.photo} alt={item.title} className="item-image" />
                   <h3>{item.title}</h3>
                   <p><strong>Category:</strong> {item.category}</p>
                   <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
 
-                  <button onClick={() => getItemDetails(item._id)}>
-                    View Details
-                  </button>
+                  <button onClick={() => getItemDetails(item._id)}>View Details </button>
+                  <button onClick={() => deleteItem(item._id)}>Delete</button>
                 </div>
               ))}
             </div>
