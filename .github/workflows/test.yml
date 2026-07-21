@@ -21,6 +21,7 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+      working-directory: backend
 
     - name: Run Server and Test
       env:
@@ -29,3 +30,4 @@ jobs:
         node server.js & 
         sleep 5 
         node test-api.js
+        working-directory: backend
