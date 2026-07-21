@@ -26,13 +26,19 @@ function App() {
       <main className="main-content">
         <section className="intro-card">
           <h2>Available Items</h2>
-            <ul className="item-list">
+          <div className="item-list">
               {items.map(item => (
-                <li key={item._id} onClick={() => getItemDetails(item._id)}>
-                  {item.title} - {item.category}
-                </li>
+                <div className="item-card" key={item._id}>
+                  <h3>{item.title}</h3>
+                  <p><strong>Category:</strong> {item.category}</p>
+                  <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
+
+                  <button onClick={() => getItemDetails(item._id)}>
+                    View Details
+                  </button>
+                </div>
               ))}
-            </ul>
+            </div>
             {selectedItem && (
               <div className="item-details">
                 <h3>Item Details</h3>
