@@ -1,11 +1,12 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Login from './login';
 import Register from './register';
 import Dashboard from './dashboard';
 
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('campusBorrow_userId'));
+  const token = localStorage.getItem('campusBorrow_token');
   
   // The switch that controls whether to show Login or Register
   const [showRegister, setShowRegister] = useState(false); 
@@ -15,9 +16,14 @@ function App() {
   
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+<<<<<<< Updated upstream
   const [searchTerm, setSearchTerm] = useState(''); //search state
+=======
+  
+  // Text fields for creating a new item
+>>>>>>> Stashed changes
   const [newItem, setNewItem] = useState({
-    title: '', category: '', price: '', description: '', photo: ''
+    title: '', category: '', price: '', description: ''
   });
   const [editingItemId, setEditingItemId] = useState(null);
   const [editItem, setEditItem] = useState({
@@ -28,6 +34,16 @@ function App() {
     photo: ''
   });
 
+  // Search and filter states
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
+
+  // Reference for the physical file input element
+  const fileInputRef = useRef(null);
+
+  // Fetch all items on initial load
   useEffect(() => {
     fetch('http://localhost:3001/api/items')
       .then(response => response.json())
@@ -46,9 +62,27 @@ function App() {
     setNewItem({ ...newItem, [name]: value });
   };
 
+<<<<<<< Updated upstream
   const handleEditInputChange = (event) => {
     const { name, value } = event.target;
     setEditItem({ ...editItem, [name]: value });
+=======
+  // Handle Search & Filter submission
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchKeyword) params.append('keyword', searchKeyword);
+    if (searchCategory) params.append('category', searchCategory);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    if (onlyAvailable) params.append('isAvailable', 'true');
+
+    fetch(`http://localhost:3001/api/items/search?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setItems(data);
+      })
+      .catch(err => console.error('Search error:', err));
+>>>>>>> Stashed changes
   };
 
   const handleSubmit = (event) => {
@@ -61,9 +95,24 @@ function App() {
       return;
     }
 
+    // Package text inputs AND the physical file into FormData for multer
+    const formData = new FormData();
+    formData.append('title', newItem.title);
+    formData.append('category', newItem.category);
+    formData.append('price', Number(newItem.price));
+    formData.append('description', newItem.description);
+    formData.append('lenderId', userId);
+    formData.append('isAvailable', true);
+
+    // Append the actual file if selected
+    if (fileInputRef.current && fileInputRef.current.files[0]) {
+      formData.append('photo', fileInputRef.current.files[0]);
+    }
+
     fetch('http://localhost:3001/api/items', {
       method: 'POST',
       headers: { 
+<<<<<<< Updated upstream
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
       },
@@ -73,6 +122,12 @@ function App() {
         photo: newItem.photo || '/noimage.jpg',
         isAvailable: true
       })
+=======
+        // Do NOT set Content-Type header; browser sets it automatically with the file boundary
+        'Authorization': `Bearer ${token}` 
+      },
+      body: formData
+>>>>>>> Stashed changes
     })
     .then(async response => {
       const data = await response.json();
@@ -81,11 +136,13 @@ function App() {
     })
     .then(data => {
       setItems([...items, data]);
-      setNewItem({ title: '', category: '', price: '', description: '', photo: '' });
+      setNewItem({ title: '', category: '', price: '', description: '' });
+      if (fileInputRef.current) fileInputRef.current.value = ''; // Reset file input
     })
     .catch(error => console.log('Error adding item:', error));
   };
 
+<<<<<<< Updated upstream
   const startEditing = (item) => {
     setEditingItemId(item._id);
     setEditItem({
@@ -109,6 +166,16 @@ function App() {
       body: JSON.stringify({
         ...editItem,
         price: Number(editItem.price)
+=======
+  const deleteItem = (id) => {
+    fetch(`http://localhost:3001/api/items/${id}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to delete item');
+        return response.json();
+>>>>>>> Stashed changes
       })
     })
       .then(response => response.json())
@@ -140,7 +207,7 @@ function App() {
     localStorage.removeItem('campusBorrow_userId');
     localStorage.removeItem('campusBorrow_token');
     setUserId(null); 
-    setShowDashboard(false); // Reset dashboard state on logout
+    setShowDashboard(false); 
   };
 
   //Search to find item by Title
@@ -193,23 +260,69 @@ function App() {
 
       <main className="main-content">
         {showDashboard ? (
-          <Dashboard token={localStorage.getItem('campusBorrow_token')} />
+          <Dashboard token={token} />
         ) : (
           <div className="content-layout">
             <section className="add-item-section">
               <h2>Add New Item</h2>
               <form onSubmit={handleSubmit}>
-                <input type="text" name="title" placeholder="Item title" value={newItem.title} onChange={handleInputChange} />
-                <input type="text" name="category" placeholder="Category" value={newItem.category} onChange={handleInputChange} />
-                <input type="number" name="price" placeholder="Price" value={newItem.price} onChange={handleInputChange} />
-                <input type="text" name="description" placeholder="Description" value={newItem.description} onChange={handleInputChange} />
-                <input type="text" name="photo" placeholder="Image URL" value={newItem.photo} onChange={handleInputChange} />
+                <input type="text" name="title" placeholder="Item title" value={newItem.title} onChange={handleInputChange} required />
+                <input type="text" name="category" placeholder="Category" value={newItem.category} onChange={handleInputChange} required />
+                <input type="number" name="price" placeholder="Price" value={newItem.price} onChange={handleInputChange} required />
+                <input type="text" name="description" placeholder="Description" value={newItem.description} onChange={handleInputChange} required />
+                
+                {/* Physical file picker for item photo */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Upload Item Photo:</label>
+                  <input type="file" ref={fileInputRef} accept="image/*" required />
+                </div>
+
                 <button type="submit">Add Item</button>
               </form>
             </section>
             
+            {/* Search & Filter Component */}
+            <section className="search-section" style={{ marginTop: '20px', marginBottom: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #ddd' }}>
+              <h3>Search & Filter Listings</h3>
+              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  placeholder="Keyword (title, description)..." 
+                  value={searchKeyword} 
+                  onChange={(e) => setSearchKeyword(e.target.value)} 
+                  style={{ padding: '8px', flexGrow: '1' }}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Category" 
+                  value={searchCategory} 
+                  onChange={(e) => setSearchCategory(e.target.value)} 
+                  style={{ padding: '8px' }}
+                />
+                <input 
+                  type="number" 
+                  placeholder="Max Price ($)" 
+                  value={maxPrice} 
+                  onChange={(e) => setMaxPrice(e.target.value)} 
+                  style={{ padding: '8px', width: '120px' }}
+                />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '14px' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={onlyAvailable} 
+                    onChange={(e) => setOnlyAvailable(e.target.checked)} 
+                  />
+                  Available Only
+                </label>
+                <button type="submit" style={{ padding: '8px 16px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  Search
+                </button>
+              </form>
+            </section>
+
             <section className="intro-card">
               <h2>Available Items</h2>
+<<<<<<< Updated upstream
               <input
                   type="text"
                   className="search-input"
@@ -267,6 +380,18 @@ function App() {
                             Cancel
                           </button>
                         </div>
+=======
+              <div className="item-list">
+                  {Array.isArray(items) && items.map(item => (
+                    <div className="item-card" key={item._id}>
+                      <img src={item.photo} alt={item.title} className="item-image" onError={(e) => { e.target.src = '/noimage.jpg'; }} />
+                      <h3>{item.title}</h3>
+                      <p><strong>Category:</strong> {item.category}</p>
+                      <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
+                      <button onClick={() => getItemDetails(item._id)}>View Details</button>
+                      {item.lenderId === userId && (
+                         <button onClick={() => deleteItem(item._id)} style={{ marginLeft: '10px', background: '#ff4d4d', color: 'white' }}>Delete</button>
+>>>>>>> Stashed changes
                       )}
                     </div>
                     
