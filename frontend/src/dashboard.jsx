@@ -243,7 +243,7 @@ export default function Dashboard() {
     };
 
     // Inline review form component
-    const ReviewForm = ({ borrowId, revieweeId, revieweeName }) => {
+    const ReviewForm = ({ borrowId, revieweeId, revieweeName, onComplete }) => {
         const [rating, setRating] = useState(5);
         const [comment, setComment] = useState('');
         const [submitted, setSubmitted] = useState(false);
@@ -284,6 +284,7 @@ export default function Dashboard() {
                         if (!comment.trim()) { alert('Please write a comment'); return; }
                         submitReview(borrowId, revieweeId, rating, comment);
                         setSubmitted(true);
+                        if (onComplete) onComplete();
                     }}
                     style={{ marginTop: '6px', padding: '6px 14px', background: '#f39c12', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
                 >
@@ -434,6 +435,7 @@ export default function Dashboard() {
                                             borrowId={req._id}
                                             revieweeId={req.borrowerId?._id}
                                             revieweeName={req.borrowerId?.name}
+                                            onComplete={() => setExpandedRequestId(null)}
                                         />
                                     )}
 
@@ -508,6 +510,7 @@ export default function Dashboard() {
                                             borrowId={borrow._id}
                                             revieweeId={borrow.lenderId?._id}
                                             revieweeName={borrow.lenderId?.name}
+                                            onComplete={() => setExpandedBorrowId(null)}
                                         />
                                     )}
 
