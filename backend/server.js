@@ -94,7 +94,7 @@ app.put('/api/items/:id', verifyToken, async (req, res) => {
         const updatedItem = await Listing.findByIdAndUpdate(
             req.params.id,
             req.body,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         res.json(updatedItem);
@@ -181,6 +181,23 @@ app.post('/api/users/login', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: 'Server error during login', error: error.message });
+    }
+});
+
+// --- Profile Routes ---
+app.put('/api/users/profile', verifyToken, async (req, res) => {
+    try {
+        const { name, bio, photo, campusLocation } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            { name, bio, photo, campusLocation },
+            { returnDocument: 'after', runValidators: true }
+        ).select('-password');
+
+        if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+        res.json({ message: 'Profile updated successfully', user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error updating profile', error: error.message });
     }
 });
 
