@@ -19,6 +19,14 @@ function App() {
   const [newItem, setNewItem] = useState({
     title: '', category: '', price: '', description: '', photo: ''
   });
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editItem, setEditItem] = useState({
+    title: '',
+    category: '',
+    price: '',
+    description: '',
+    photo: ''
+  });
 
   useEffect(() => {
     fetch('http://localhost:3001/api/items')
@@ -36,6 +44,11 @@ function App() {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setNewItem({ ...newItem, [name]: value });
+  };
+
+  const handleEditInputChange = (event) => {
+    const { name, value } = event.target;
+    setEditItem({ ...editItem, [name]: value });
   };
 
   const handleSubmit = (event) => {
@@ -71,6 +84,40 @@ function App() {
       setNewItem({ title: '', category: '', price: '', description: '', photo: '' });
     })
     .catch(error => console.log('Error adding item:', error));
+  };
+
+  const startEditing = (item) => {
+    setEditingItemId(item._id);
+    setEditItem({
+      title: item.title,
+      category: item.category,
+      price: item.price,
+      description: item.description,
+      photo: item.photo
+    });
+  };
+
+  const updateItem = (id) => {
+    const token = localStorage.getItem('campusBorrow_token');
+
+    fetch(`http://localhost:3001/api/items/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        ...editItem,
+        price: Number(editItem.price)
+      })
+    })
+      .then(response => response.json())
+      .then(updatedItem => {
+        setItems(items.map(item => item._id === id ? updatedItem : item));
+        setSelectedItem(updatedItem);
+        setEditingItemId(null);
+      })
+    .catch(error => console.log('Error updating item:', error));
   };
 
   const deleteItem = (id) => {
@@ -181,7 +228,10 @@ function App() {
                         <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
                         <button onClick={() => getItemDetails(item._id)}>View Details</button>
                         {item.lenderId === userId && (
+                          <>
+                          <button onClick={() => startEditing(item)}>Edit</button>
                           <button onClick={() => deleteItem(item._id)} style={{ marginLeft: '10px', background: '#ff4d4d', color: 'white' }}>Delete</button>
+                          </>
                         )}
                       </div>
                     ))}
@@ -198,7 +248,28 @@ function App() {
                       <p><strong>Description:</strong> {selectedItem.description}</p>
                       <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
                       <button className="borrow-button">Request to Borrow</button>
+
+                      {editingItemId === selectedItem._id && (
+                        <div className="edit-item-form">
+                          <h3>Edit Item</h3>
+
+                          <input type="text" name="title" value={editItem.title} onChange={handleEditInputChange} />
+                          <input type="text" name="category" value={editItem.category} onChange={handleEditInputChange} />
+                          <input type="number" name="price" value={editItem.price} onChange={handleEditInputChange} />
+                          <input type="text" name="description" value={editItem.description} onChange={handleEditInputChange} />
+                          <input type="text" name="photo" value={editItem.photo} onChange={handleEditInputChange} />
+
+                          <button onClick={() => updateItem(selectedItem._id)}>
+                            Save Changes
+                          </button>
+
+                          <button onClick={() => setEditingItemId(null)}>
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
+                    
                   )}
                 </div>
               </section>

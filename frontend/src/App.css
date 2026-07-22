@@ -251,3 +251,34 @@
   border-radius: 8px;
   font-size: 16px;
 }
+
+/* Edit Button */
+.edit-item-form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-item-form input {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+
+.edit-item-form button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-item-form button:first-of-type {
+  background-color: #2563eb;
+  color: white;
+}
+
+.edit-item-form button:last-of-type {
+  background-color: #6b7280;
+  color: white;
+}
