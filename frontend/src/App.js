@@ -40,6 +40,8 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    const token = localStorage.getItem('campusBorrow_token');
+
     if (!userId) {
       alert("You must be logged in to post an item!");
       return;
@@ -47,11 +49,13 @@ function App() {
 
     fetch('http://localhost:3001/api/items', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({
         ...newItem,
         price: Number(newItem.price),
-        lenderId: userId, 
         photo: newItem.photo || '/noimage.jpg',
         isAvailable: true
       })
