@@ -178,6 +178,45 @@ function App() {
     setShowDashboard(false);
   };
 
+  // Handle borrow request
+  const handleBorrowRequest = async (itemId) => {
+    if (!userId) {
+      alert("You must be logged in to request an item!");
+      return;
+    }
+
+    // Prompting for a return date for testing purposes
+    const daysOut = prompt("How many days do you want to borrow this item for?", "7");
+    if (!daysOut) return;
+
+    const returnTimestamp = Date.now() + (Number(daysOut) * 24 * 60 * 60 * 1000);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/borrows', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          listingId: itemId,
+          pickupDate: new Date().toISOString(),
+          returnDate: new Date(returnTimestamp).toISOString() 
+        })
+      });
+
+      if (res.ok) {
+        alert("Request sent successfully! Check your Dashboard.");
+        setSelectedItem(null);
+      } else {
+        const data = await res.json();
+        alert(`Failed to send request: ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error creating borrow request:', error);
+    }
+  };
+  
   const filteredItems = items.filter(item =>
     item.title?.toLowerCase().includes(searchKeyword.toLowerCase())
   );
@@ -329,10 +368,18 @@ function App() {
                     <p><strong>Category:</strong> {selectedItem.category}</p>
                     <p><strong>Description:</strong> {selectedItem.description}</p>
                     <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
-                    <button className="borrow-button">Request to Borrow</button>
+                    
+                    {/* Borrow button */}
+                    <button 
+                      className="borrow-button" 
+                      onClick={() => handleBorrowRequest(selectedItem._id)}
+                      style={{ padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      Request to Borrow
+                    </button>
 
                     {editingItemId === selectedItem._id && (
-                      <div className="edit-item-form">
+                      <div className="edit-item-form" style={{ marginTop: '15px' }}>
                         <h3>Edit Item</h3>
 
                         <input type="text" name="title" value={editItem.title} onChange={handleEditInputChange} />

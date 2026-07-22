@@ -307,10 +307,13 @@ app.post('/api/borrows', verifyToken, async (req, res) => {
     }
 });
 
-// Get my borrows
+// Get my borrows (FIX: populate message senders and lender info)
 app.get('/api/borrows/me', verifyToken, async (req, res) => {
     try {
-        const myBorrows = await Borrow.find({ borrowerId: req.user.userId }).populate('listingId');
+        const myBorrows = await Borrow.find({ borrowerId: req.user.userId })
+            .populate('listingId')
+            .populate('lenderId', 'name photo')
+            .populate('messages.senderId', 'name');
         res.json(myBorrows);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching borrowed items', error: error.message });
@@ -325,14 +328,15 @@ app.put('/api/borrows/:id', verifyToken, async (req, res) => {
             req.params.id,
             { status },
             { returnDocument: 'after' }
-        );
+        ).populate('listingId');
         
         if (!updatedBorrow) return res.status(404).json({ message: 'Borrow record not found' });
         
+        // When approved, mark the listing as unavailable
         if (status === 'Approved') {
-            await Listing.findByIdAndUpdate(updatedBorrow.listingId, { isAvailable: false });
+            await Listing.findByIdAndUpdate(updatedBorrow.listingId._id, { isAvailable: false });
         } else if (status === 'Completed' || status === 'Canceled') {
-            await Listing.findByIdAndUpdate(updatedBorrow.listingId, { isAvailable: true });
+            await Listing.findByIdAndUpdate(updatedBorrow.listingId._id, { isAvailable: true });
         }
 
         res.json(updatedBorrow);
@@ -340,7 +344,6 @@ app.put('/api/borrows/:id', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Error updating borrow status', error: error.message });
     }
 });
-
 // Send message on borrow request
 app.post('/api/borrows/:id/messages', verifyToken, async (req, res) => {
     try {
@@ -370,6 +373,18 @@ app.post('/api/borrows/:id/messages', verifyToken, async (req, res) => {
     }
 });
 
+// Get incoming requests (Items I am lending to others)
+app.get('/api/borrows/incoming', verifyToken, async (req, res) => {
+    try {
+        const incomingBorrows = await Borrow.find({ lenderId: req.user.userId })
+            .populate('listingId')
+            .populate('borrowerId', 'name photo')
+            .populate('messages.senderId', 'name');
+        res.json(incomingBorrows);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching incoming requests', error: error.message });
+    }
+});
 
 // Create review
 app.post('/api/reviews', verifyToken, async (req, res) => {
@@ -403,7 +418,9 @@ app.post('/api/reviews', verifyToken, async (req, res) => {
 // Get my reviews
 app.get('/api/reviews/me', verifyToken, async (req, res) => {
     try {
-        const myReviews = await Review.find({ revieweeId: req.user.userId }).populate('reviewerId', 'name photo');
+        const myReviews = await Review.find({ revieweeId: req.user.userId })
+            .populate('reviewerId', 'name photo')
+            .populate('borrowId', 'lenderId borrowerId');
         res.json(myReviews);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching reviews', error: error.message });
