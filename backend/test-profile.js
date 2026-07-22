@@ -27,8 +27,8 @@ async function runProfileTests() {
         token = (await loginRes.json()).token;
         console.log('-> Setup Complete.\n');
 
-        // --- 2. TEST 1: Update Profile Successfully ---
-        console.log('Test 1: Updating user profile (bio and location)...');
+        // --- 2. TEST 1: Update Profile Successfully (PUT) ---
+        console.log('Test 1: Updating user profile (name, bio, location, and photo)...');
         const updateRes = await fetch(`${baseUrl}/users/profile`, {
             method: 'PUT',
             headers: { 
@@ -36,33 +36,51 @@ async function runProfileTests() {
                 'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ 
+                name: 'Updated Tester',
                 bio: 'I am a test user making sure the dashboard works.', 
                 campusLocation: 'Main Library',
-                name: 'Updated Tester'
+                photo: 'https://imgur.com/test-avatar.png'
             })
         });
 
         const updateText = await updateRes.text();
         if (updateRes.ok) {
-            console.log('-> PASS: Profile updated successfully.');
-            const data = JSON.parse(updateText);
-            console.log(`   Verification - Bio saved as: "${data.user.bio}"`);
-            console.log(`   Verification - Location saved as: "${data.user.campusLocation}"\n`);
+            console.log('-> PASS: Server accepted the PUT request to update profile.\n');
         } else {
             console.log(`-> FAIL: Server returned status ${updateRes.status}: ${updateText}\n`);
         }
 
-        // --- 3. TEST 2: Reject Update without Token ---
-        console.log('Test 2: Attempting to update profile without an auth token...');
+        // --- 3. TEST 2: Fetch Saved Profile Data (GET) ---
+        console.log('Test 2: Fetching the saved user profile to verify data (GET)...');
+        const getRes = await fetch(`${baseUrl}/users/profile`, {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+
+        const getText = await getRes.text();
+        if (getRes.ok) {
+            const data = JSON.parse(getText);
+            console.log('-> PASS: Server successfully returned the profile.');
+            console.log(`   Verification - Name: "${data.name}"`);
+            console.log(`   Verification - Bio: "${data.bio}"`);
+            console.log(`   Verification - Location: "${data.campusLocation}"`);
+            console.log(`   Verification - Photo: "${data.photo}"\n`);
+        } else {
+            console.log(`-> FAIL: Server returned status ${getRes.status}: ${getText}\n`);
+        }
+
+        // --- 4. TEST 3: Reject Access without Token ---
+        console.log('Test 3: Attempting to access profile without an auth token...');
         const noTokenRes = await fetch(`${baseUrl}/users/profile`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }, // Intentionally omitting the Bearer token
-            body: JSON.stringify({ bio: 'Hacker trying to bypass security' })
+            method: 'GET', // Testing the GET route this time
+            headers: { 'Content-Type': 'application/json' } 
         });
 
         const noTokenText = await noTokenRes.text();
         if (noTokenRes.status === 401 || noTokenRes.status === 403) {
-            console.log('-> PASS: Security worked. Server blocked unauthorized profile edit.\n');
+            console.log('-> PASS: Security worked. Server blocked unauthorized profile access.\n');
         } else {
             console.log(`-> FAIL: Security hole! Expected 401/403 block, got ${noTokenRes.status}: ${noTokenText}\n`);
         }
