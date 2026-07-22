@@ -15,27 +15,19 @@ const Review = require('./models/review');
 
 const app = express();
 const port = process.env.PORT || 3001; 
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-
+// Prevent NoSQL injection and XSS
 
 // Database
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB successfully!'))
   .catch(err => console.error('MongoDB connection error:', err.message));
 
-
 app.get('/', (req, res) => {
     res.send('Welcome to the CampusBorrow API!');
-});
-
-app.get('/api/items', async (req, res) => {
-    try {
-        const items = await Listing.find(); 
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error pulling items', error: error.message });
-    }
 });
 
 const verifyToken = (req, res, next) => {
@@ -68,20 +60,57 @@ const upload = multer({ storage: storage });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
+// Search items
+app.get('/api/items/search', async (req, res) => {
+    try {
+        const { keyword, category, maxPrice, isAvailable } = req.query;
+        let query = {};
 
+        if (keyword) {
+            query.$or = [
+                { title: { $regex: keyword, $options: 'i' } },
+                { description: { $regex: keyword, $options: 'i' } },
+                { category: { $regex: keyword, $options: 'i' } }
+            ];
+        }
 
-// Item routes
+        if (category) {
+            query.category = category;
+        }
+
+        if (maxPrice) {
+            query.price = { $lte: Number(maxPrice) };
+        }
+
+        if (isAvailable !== undefined) {
+            query.isAvailable = isAvailable === 'true';
+        }
+
+        const items = await Listing.find(query);
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error during search', error: error.message });
+    }
+});
+
+// Get all items
+app.get('/api/items', async (req, res) => {
+    try {
+        const items = await Listing.find({});
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get item by ID
 app.get('/api/items/:id', async (req, res) => {
     try {
         const item = await Listing.findById(req.params.id);
-
-        if (!item) {
-            return res.status(404).json({ message: 'Item not found' });
-        }
-
+        if (!item) return res.status(404).json({ message: 'Item not found' });
         res.json(item);
     } catch (error) {
-        res.status(500).json({ message: 'Server error tracking item', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -141,6 +170,9 @@ app.delete('/api/items/:id', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Server error deleting item', error: error.message });
     }
 });
+
+
+
 
 // Register user
 app.post('/api/users/register', async (req, res) => {
@@ -203,7 +235,7 @@ app.post('/api/users/login', async (req, res) => {
     }
 });
 
-// Profile routes
+// Update profile
 app.put('/api/users/profile', verifyToken, upload.single('photo'), async (req, res) => {
     try {
         const { name, bio, campusLocation } = req.body;
@@ -238,26 +270,39 @@ app.get('/api/users/profile', verifyToken, async (req, res) => {
     }
 });
 
+
 // Create borrow request
 app.post('/api/borrows', verifyToken, async (req, res) => {
     try {
-        const { listingId, lenderId, pickupDate, returnDate } = req.body;
+        const { listingId, pickupDate, returnDate } = req.body;
         
         if (!pickupDate || !returnDate) {
             return res.status(400).json({ message: 'Pickup and return dates are required.' });
         }
 
+        // Get listing to find lender ID
+        const listing = await Listing.findById(listingId);
+        if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+        // Prevent users from borrowing their own item
+        if (String(listing.lenderId) === String(req.user.userId)) {
+            return res.status(400).json({ message: 'You cannot borrow your own item' });
+        }
+
         const newBorrow = new Borrow({
             listingId,
             borrowerId: req.user.userId,
-            lenderId,
+            lenderId: listing.lenderId, // From database
             pickupDate,
-            returnDate
+            returnDate,
+            status: 'Pending',
+            messages: []
         });
         
         await newBorrow.save();
         res.status(201).json({ message: 'Borrow request sent', borrow: newBorrow });
     } catch (error) {
+        console.error("Error creating borrow request:", error);
         res.status(500).json({ message: 'Error creating borrow request', error: error.message });
     }
 });
@@ -295,6 +340,36 @@ app.put('/api/borrows/:id', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Error updating borrow status', error: error.message });
     }
 });
+
+// Send message on borrow request
+app.post('/api/borrows/:id/messages', verifyToken, async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) return res.status(400).json({ message: 'Message text is required' });
+
+        const borrow = await Borrow.findById(req.params.id);
+        if (!borrow) return res.status(404).json({ message: 'Borrow request not found' });
+
+        // Add message to borrow
+        borrow.messages.push({
+            senderId: req.user.userId,
+            text,
+            sentAt: new Date()
+        });
+
+        await borrow.save();
+        
+        const updatedBorrow = await Borrow.findById(req.params.id)
+            .populate('listingId')
+            .populate('borrowerId', 'name photo')
+            .populate('messages.senderId', 'name');
+
+        res.json(updatedBorrow);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error sending message', error: error.message });
+    }
+});
+
 
 // Create review
 app.post('/api/reviews', verifyToken, async (req, res) => {
@@ -334,59 +409,7 @@ app.get('/api/reviews/me', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching reviews', error: error.message });
     }
 });
-// Search items
-app.get('/api/items/search', async (req, res) => {
-    try {
-        const { keyword, category, maxPrice, isAvailable } = req.query;
-        let query = {};
 
-        if (keyword) {
-            query.$or = [
-                { title: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } },
-                { category: { $regex: keyword, $options: 'i' } }
-            ];
-        }
-
-        if (category) {
-            query.category = category;
-        }
-
-        if (maxPrice) {
-            query.price = { $lte: Number(maxPrice) };
-        }
-
-        if (isAvailable !== undefined) {
-            query.isAvailable = isAvailable === 'true';
-        }
-
-        const items = await Listing.find(query);
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error during search', error: error.message });
-    }
-});
-
-// Get all items
-app.get('/api/items', async (req, res) => {
-    try {
-        const items = await Listing.find({});
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Get item by id
-app.get('/api/items/:id', async (req, res) => {
-    try {
-        const item = await Listing.findById(req.params.id);
-        if (!item) return res.status(404).json({ message: 'Item not found' });
-        res.json(item);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
 app.listen(port, () => {
     console.log(`Backend server is running on http://localhost:${port}`);
 });
