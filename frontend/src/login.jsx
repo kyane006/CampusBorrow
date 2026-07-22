@@ -20,9 +20,12 @@ export default function Login({ onLoginSuccess }) {
 
             if (response.ok) {
                 // Save the ID and trigger the screen swap in App.js
-                localStorage.setItem('campusBorrow_token', data.token); 
+                localStorage.setItem('campusBorrow_token', data.token);
+                localStorage.setItem('campusBorrow_userId', data.userId);
                 setSuccess('Login successful!');
-                setTimeout(() => {onLoginSuccess(data.userId);}, 1500);
+                setTimeout(() => {
+                    onLoginSuccess(data.userId);
+                }, 1500);
             } else {
                 setError(data.message);
             }
