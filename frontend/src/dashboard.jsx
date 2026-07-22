@@ -4,34 +4,48 @@ export default function Dashboard() {
     const userId = localStorage.getItem('campusBorrow_userId');
     const token = localStorage.getItem('campusBorrow_token');
 
-    const [profile, setProfile] = useState({ name: '', bio: '', campusLocation: '' });
+    // Added 'photo' to the state
+    const [profile, setProfile] = useState({ name: '', bio: '', campusLocation: '', photo: '' });
     const [profileMsg, setProfileMsg] = useState('');
     
     const [myItems, setMyItems] = useState([]);
-    const [editingItem, setEditingItem] = useState(null); // Tracks which item is being edited
+    const [editingItem, setEditingItem] = useState(null); 
     
-    // State for future features
     // eslint-disable-next-line no-unused-vars
     const [borrowedItems, setBorrowedItems] = useState([]);
     // eslint-disable-next-line no-unused-vars
     const [myReviews, setMyReviews] = useState([]);
 
     useEffect(() => {
-        // 1. Fetch User's Items
+        // 1. Fetch the user's saved profile data
+        fetch('http://localhost:3001/api/users/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.name) {
+                // Pre-fill the form with the database data
+                setProfile({
+                    name: data.name || '',
+                    bio: data.bio || '',
+                    campusLocation: data.campusLocation || '',
+                    photo: data.photo || '/default-avatar.png'
+                });
+            }
+        })
+        .catch(err => console.error("Error fetching profile:", err));
+
+        // 2. Fetch User's Items
         fetch('http://localhost:3001/api/items')
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
-                    // Filter to only show items this user owns
                     const userItems = data.filter(item => item.lenderId === userId);
                     setMyItems(userItems);
                 }
             })
             .catch(err => console.error("Error fetching items:", err));
-
-        // Note: When the backend routes are built, you will add fetch calls 
-        // here for GET /api/users/profile, GET /api/borrows/me, and GET /api/reviews/me
-    }, [userId]);
+    }, [userId, token]);
 
     // --- PROFILE HANDLER ---
     const handleProfileUpdate = async (e) => {
@@ -72,9 +86,8 @@ export default function Dashboard() {
             
             if (res.ok) {
                 const updatedItem = await res.json();
-                // Update the item in the local array so the UI refreshes
                 setMyItems(myItems.map(item => item._id === updatedItem._id ? updatedItem : item));
-                setEditingItem(null); // Close the edit form
+                setEditingItem(null); 
             } else {
                 alert("Failed to update item.");
             }
@@ -99,20 +112,39 @@ export default function Dashboard() {
 
     return (
         <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>User Dashboard</h2>
+            {/* Displaying the saved name dynamically */}
+            <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
+                Welcome to your Dashboard, {profile.name || 'User'}!
+            </h2>
 
             {/* SECTION 1: ACCOUNT & PROFILE */}
-            <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3>My Profile</h3>
-                {profileMsg && <p style={{ color: 'green' }}>{profileMsg}</p>}
-                <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <input type="text" placeholder="Name" value={profile.name} onChange={(e) => setProfile({...profile, name: e.target.value})} style={{ padding: '8px' }} />
-                    <input type="text" placeholder="Campus Location" value={profile.campusLocation} onChange={(e) => setProfile({...profile, campusLocation: e.target.value})} style={{ padding: '8px' }} />
-                    <textarea placeholder="Bio" value={profile.bio} onChange={(e) => setProfile({...profile, bio: e.target.value})} style={{ padding: '8px', minHeight: '80px' }} />
-                    <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        Save Profile
-                    </button>
-                </form>
+            <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '20px' }}>
+                
+                {/* Profile Picture Display */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '150px' }}>
+                    <img 
+                        src={profile.photo || '/default-avatar.png'} 
+                        alt="Profile Avatar" 
+                        style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '50%', marginBottom: '10px', border: '2px solid #ddd' }}
+                        onError={(e) => { e.target.src = '/noimage.jpg'; }}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Your Avatar</span>
+                </div>
+
+                {/* Profile Edit Form */}
+                <div style={{ flexGrow: 1 }}>
+                    <h3>Edit Profile Details</h3>
+                    {profileMsg && <p style={{ color: 'green', fontWeight: 'bold' }}>{profileMsg}</p>}
+                    <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <input type="text" placeholder="Name" value={profile.name} onChange={(e) => setProfile({...profile, name: e.target.value})} style={{ padding: '8px' }} />
+                        <input type="text" placeholder="Profile Photo URL (e.g., imgur link)" value={profile.photo} onChange={(e) => setProfile({...profile, photo: e.target.value})} style={{ padding: '8px' }} />
+                        <input type="text" placeholder="Campus Location" value={profile.campusLocation} onChange={(e) => setProfile({...profile, campusLocation: e.target.value})} style={{ padding: '8px' }} />
+                        <textarea placeholder="Bio" value={profile.bio} onChange={(e) => setProfile({...profile, bio: e.target.value})} style={{ padding: '8px', minHeight: '80px' }} />
+                        <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Save Profile
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {/* SECTION 2: MY LISTINGS (View, Edit, Delete) */}
@@ -123,7 +155,6 @@ export default function Dashboard() {
                         {myItems.map(item => (
                             <div key={item._id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '4px', background: '#fafafa' }}>
                                 
-                                {/* If this item is being edited, show the form */}
                                 {editingItem && editingItem._id === item._id ? (
                                     <form onSubmit={submitItemUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                         <input type="text" name="title" value={editingItem.title} onChange={handleItemUpdateChange} required />
@@ -135,7 +166,6 @@ export default function Dashboard() {
                                         </div>
                                     </form>
                                 ) : (
-                                    /* Normal Display Mode */
                                     <>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div>
