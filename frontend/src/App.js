@@ -161,6 +161,7 @@ function App() {
                     <div className="item-card" key={item._id}>
                       <img src={item.photo} alt={item.title} className="item-image" />
                       <h3>{item.title}</h3>
+                      <p className="item-price">${item.price}</p>
                       <p><strong>Category:</strong> {item.category}</p>
                       <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
                       <button onClick={() => getItemDetails(item._id)}>View Details</button>
@@ -176,6 +177,7 @@ function App() {
                     <h2>Selected Item</h2>
                     <img src={selectedItem.photo || '/noimage.jpg'} alt={selectedItem.title} className="details-image" onError={(e) => { e.target.src = '/noimage.jpg'; }} />
                     <h3>{selectedItem.title}</h3>
+                    <p className="item-price">${selectedItem.price}</p>
                     <p><strong>Category:</strong> {selectedItem.category}</p>
                     <p><strong>Price:</strong> ${selectedItem.price}</p>
                     <p><strong>Description:</strong> {selectedItem.description}</p>
