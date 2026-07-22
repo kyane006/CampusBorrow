@@ -73,11 +73,14 @@ function App() {
   };
 
   const deleteItem = (id) => {
-    fetch(`http://localhost:3001/api/items/${id}`, { method: 'DELETE' })
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to delete item');
-        return response.json();
-      })
+    const token = localStorage.getItem('campusBorrow_token');
+
+    fetch(`http://localhost:3001/api/items/${id}`, { 
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then(() => {
         setItems(items.filter(item => item._id !== id));
         setSelectedItem(null);
