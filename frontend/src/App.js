@@ -148,7 +148,7 @@ function App() {
         {showDashboard ? (
           <Dashboard token={localStorage.getItem('campusBorrow_token')} />
         ) : (
-          <>
+          <div className="content-layout">
             <section className="add-item-section">
               <h2>Add New Item</h2>
               <form onSubmit={handleSubmit}>
@@ -170,37 +170,39 @@ function App() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-              <div className="item-list">
-                  {Array.isArray(filteredItems) && filteredItems.map(item => (
-                    <div className="item-card" key={item._id}>
-                      <img src={item.photo} alt={item.title} className="item-image" />
-                      <h3>{item.title}</h3>
-                      <p className="item-price">${item.price}</p>
-                      <p><strong>Category:</strong> {item.category}</p>
-                      <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
-                      <button onClick={() => getItemDetails(item._id)}>View Details</button>
-                      {item.lenderId === userId && (
-                         <button onClick={() => deleteItem(item._id)} style={{ marginLeft: '10px', background: '#ff4d4d', color: 'white' }}>Delete</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {selectedItem && (
-                  <div className="item-details">
-                    <h2>Selected Item</h2>
-                    <img src={selectedItem.photo || '/noimage.jpg'} alt={selectedItem.title} className="details-image" onError={(e) => { e.target.src = '/noimage.jpg'; }} />
-                    <h3>{selectedItem.title}</h3>
-                    <p className="item-price">${selectedItem.price}</p>
-                    <p><strong>Category:</strong> {selectedItem.category}</p>
-                    <p><strong>Price:</strong> ${selectedItem.price}</p>
-                    <p><strong>Description:</strong> {selectedItem.description}</p>
-                    <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
-                    <button className="borrow-button">Request to Borrow</button>
+              <div className="items-and-details">
+                <div className="item-list">
+                    {Array.isArray(filteredItems) && filteredItems.map(item => (
+                      <div className="item-card" key={item._id}>
+                        <img src={item.photo} alt={item.title} className="item-image" />
+                        <h3>{item.title}</h3>
+                        <p className="item-price">${item.price}</p>
+                        <p><strong>Category:</strong> {item.category}</p>
+                        <p><strong>Status:</strong> {item.isAvailable ? 'Available' : 'Unavailable'}</p>
+                        <button onClick={() => getItemDetails(item._id)}>View Details</button>
+                        {item.lenderId === userId && (
+                          <button onClick={() => deleteItem(item._id)} style={{ marginLeft: '10px', background: '#ff4d4d', color: 'white' }}>Delete</button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-            </section>
-          </>
+
+                  {selectedItem && (
+                    <div className="item-details">
+                      <h2>Selected Item</h2>
+                      <img src={selectedItem.photo || '/noimage.jpg'} alt={selectedItem.title} className="details-image" onError={(e) => { e.target.src = '/noimage.jpg'; }} />
+                      <h3>{selectedItem.title}</h3>
+                      <p className="item-price">${selectedItem.price}</p>
+                      <p><strong>Category:</strong> {selectedItem.category}</p>
+                      <p><strong>Price:</strong> ${selectedItem.price}</p>
+                      <p><strong>Description:</strong> {selectedItem.description}</p>
+                      <p><strong>Status:</strong> {selectedItem.isAvailable ? 'Available' : 'Unavailable'}</p>
+                      <button className="borrow-button">Request to Borrow</button>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
         )}
       </main>
     </div>
