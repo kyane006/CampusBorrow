@@ -15,6 +15,7 @@ function App() {
   
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); //search state
   const [newItem, setNewItem] = useState({
     title: '', category: '', price: '', description: '', photo: ''
   });
@@ -90,9 +91,15 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('campusBorrow_userId');
+    localStorage.removeItem('campusBorrow_token');
     setUserId(null); 
     setShowDashboard(false); // Reset dashboard state on logout
   };
+
+  //Search to find item by Title
+  const filteredItems = items.filter(item =>
+    item.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (!userId) {
     if (showRegister) {
@@ -156,8 +163,15 @@ function App() {
             
             <section className="intro-card">
               <h2>Available Items</h2>
+              <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by item title..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               <div className="item-list">
-                  {Array.isArray(items) && items.map(item => (
+                  {Array.isArray(filteredItems) && filteredItems.map(item => (
                     <div className="item-card" key={item._id}>
                       <img src={item.photo} alt={item.title} className="item-image" />
                       <h3>{item.title}</h3>
