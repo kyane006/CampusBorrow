@@ -27,3 +27,32 @@ Karl:  Frontend , search/filter UI, recommendation logic
 
 Both of us will contribute to testing, security hardening, and the final report.
 
+## Setup Instructions
+
+### Backend
+1. Open the backend folder:
+   cd backend
+
+2. Install dependencies:
+   npm install
+
+3. Create a .env file with:
+   MONGO_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret
+   PORT=3001
+
+4. Start the backend:
+   node server.js
+
+### Frontend
+1. Open the frontend folder:
+   cd frontend
+
+2. Install dependencies:
+   npm install
+
+3. Start the frontend:
+   npm start
+
+The frontend runs on http://localhost:3000.
+The backend runs on http://localhost:3001.
